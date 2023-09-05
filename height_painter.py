@@ -14,7 +14,7 @@ bl_info = {
     "name": "Height Painter",
     "description": "Colors each polygon with first 2 colors of object material by height",
     "author": "Nikita Akimov, Paul Kotelevets",
-    "version": (1, 0, 3),
+    "version": (1, 0, 4),
     "blender": (2, 79, 0),
     "location": "View3D > Tool panel > 1D > DrewingsSplit",
     "doc_url": "https://github.com/Korchy/1d_height_painter",
@@ -41,9 +41,10 @@ class HeightPainter:
         bm.verts.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
 
-        p0 = []     # polygon indices for first color
-        p1 = []     # polygon indices for second color
-        p2 = []     # polygon indices for third color
+        p0 = []     # polygon indices for first color (odd lines)
+        p1 = []     # polygon indices for second color (even lines)
+        p2 = []     # polygon indices for third color (horizontally flat polygons)
+        p3 = []     # polygon indices for forth color (all other polygons)
 
         selected_faces = (face for face in bm.faces if face.select)
 
@@ -54,19 +55,23 @@ class HeightPainter:
                 height=height,
                 threshold=threshold
             )
-            # by line indexes on which face lies - check in what group it should be
-            if face_index[0] == face_index[1]:
-                # all indices are equal
-                if face_index[0] % 2 == 0:
-                    # if even - first color group
-                    p0.append(face.index)
-                else:
-                    # if odd - second color group
-                    p1.append(face.index)
-            else:
-                # if indices are different - face lies on several lines, third color group
+            if face_index[2] is True:
+                # horizontally flat polygon
                 p2.append(face.index)
-
+            else:
+                # by line indexes on which face lies - check in what group it should be
+                if face_index[0] == face_index[1]:
+                    # all indices are equal
+                    if face_index[0] % 2 == 0:
+                        # if even - first color group
+                        p0.append(face.index)
+                    else:
+                        # if odd - second color group
+                        p1.append(face.index)
+                else:
+                    # if indices are different - face lies on several lines, third color group
+                    p3.append(face.index)
+        print(p2)
         # color polygons by getted lists
         for polygon in obj.data.polygons:
             if polygon.index in p0:
@@ -75,6 +80,8 @@ class HeightPainter:
                 polygon.material_index = 1
             elif polygon.index in p2:
                 polygon.material_index = 2
+            elif polygon.index in p3:
+                polygon.material_index = 3
 
         # return mode back
         bpy.ops.object.mode_set(mode=mode)
@@ -87,7 +94,8 @@ class HeightPainter:
         max_z = max(co_z) - threshold       # with threshold
         min_z_index = ceil(min_z / height)  # line index for min face point
         max_z_index = ceil(max_z / height)  # line index for max face point
-        return min_z_index, max_z_index
+        is_horizontally_flat = True if abs(max(co_z) - min(co_z)) <= threshold else False  # face is horizontally flat
+        return min_z_index, max_z_index, is_horizontally_flat
 
 
 # OPERATORS

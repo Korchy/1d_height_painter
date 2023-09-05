@@ -17,3 +17,8 @@ Polygons that lies on several lines - colors with material from the third materi
 Blender version
 -
 2.79
+
+Version history
+-
+1.0.4
+- Added one more color for horizontally flat polygons
