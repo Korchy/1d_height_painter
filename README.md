@@ -20,5 +20,8 @@ Blender version
 
 Version history
 -
+1.0.5
+- Integrated to the NA 1D Tools
+
 1.0.4
 - Added one more color for horizontally flat polygons

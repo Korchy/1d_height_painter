@@ -14,7 +14,7 @@ bl_info = {
     "name": "Height Painter",
     "description": "Colors each polygon with first 2 colors of object material by height",
     "author": "Nikita Akimov, Paul Kotelevets",
-    "version": (1, 0, 4),
+    "version": (1, 0, 5),
     "blender": (2, 79, 0),
     "location": "View3D > Tool panel > 1D > DrewingsSplit",
     "doc_url": "https://github.com/Korchy/1d_height_painter",
@@ -97,6 +97,25 @@ class HeightPainter:
         is_horizontally_flat = True if abs(max(co_z) - min(co_z)) <= threshold else False  # face is horizontally flat
         return min_z_index, max_z_index, is_horizontally_flat
 
+    @staticmethod
+    def ui(layout, context):
+        # ui panel
+        layout.prop(
+            data=context.scene,
+            property='height_painter_height'
+        )
+        layout.prop(
+            data=context.scene,
+            property='height_painter_threshold'
+        )
+        op = layout.operator(
+            operator='height_painter.paint_polygons',
+            text='Paint Polygons',
+            icon='VPAINT_HLT'
+        )
+        op.height = context.scene.height_painter_height
+        op.threshold = context.scene.height_painter_threshold
+
 
 # OPERATORS
 
@@ -138,27 +157,15 @@ class HeightPainter_PT_panel(Panel):
     bl_category = '1D'
 
     def draw(self, context):
-        layout = self.layout
-        layout.prop(
-            data=context.scene,
-            property='height_painter_height'
+        HeightPainter.ui(
+            layout=self.layout,
+            context=context
         )
-        layout.prop(
-            data=context.scene,
-            property='height_painter_threshold'
-        )
-        op = layout.operator(
-            operator='height_painter.paint_polygons',
-            text='Paint Polygons',
-            icon='VPAINT_HLT'
-        )
-        op.height = context.scene.height_painter_height
-        op.threshold = context.scene.height_painter_threshold
 
 
 # REGISTER
 
-def register():
+def register(ui=True):
     Scene.height_painter_height = FloatProperty(
         name='Height',
         default=0.5,
@@ -174,11 +181,13 @@ def register():
         step=1
     )
     bpy.utils.register_class(HeightPainter_OT_paint_polygons)
-    bpy.utils.register_class(HeightPainter_PT_panel)
+    if ui:
+        bpy.utils.register_class(HeightPainter_PT_panel)
 
 
-def unregister():
-    bpy.utils.unregister_class(HeightPainter_PT_panel)
+def unregister(ui=True):
+    if ui:
+        bpy.utils.unregister_class(HeightPainter_PT_panel)
     bpy.utils.unregister_class(HeightPainter_OT_paint_polygons)
     del Scene.height_painter_height
     del Scene.height_painter_threshold
