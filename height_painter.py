@@ -14,7 +14,7 @@ bl_info = {
     "name": "Height Painter",
     "description": "Colors each polygon with first 2 colors of object material by height",
     "author": "Nikita Akimov, Paul Kotelevets",
-    "version": (1, 0, 5),
+    "version": (1, 0, 6),
     "blender": (2, 79, 0),
     "location": "View3D > Tool panel > 1D > DrewingsSplit",
     "doc_url": "https://github.com/Korchy/1d_height_painter",
@@ -122,6 +122,7 @@ class HeightPainter:
 class HeightPainter_OT_paint_polygons(Operator):
     bl_idname = 'height_painter.paint_polygons'
     bl_label = 'Paint polygons'
+    bl_description = 'Paint edit mode polygonal selection by height from object origin - material 1 and 2 are stripes, material 3 is Z-flat, material 4 is error'
     bl_options = {'REGISTER', 'UNDO'}
 
     height = FloatProperty(
@@ -168,6 +169,7 @@ class HeightPainter_PT_panel(Panel):
 def register(ui=True):
     Scene.height_painter_height = FloatProperty(
         name='Height',
+        description='Z elevation between isolines from object origin',
         default=0.5,
         min=0.0001,
         subtype='UNSIGNED',
@@ -175,6 +177,7 @@ def register(ui=True):
     )
     Scene.height_painter_threshold = FloatProperty(
         name='Height threshold',
+        description='Isolines level tolreance',
         default=0.02,
         min=0.0,
         subtype='UNSIGNED',
